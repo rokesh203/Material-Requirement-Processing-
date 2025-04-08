@@ -2,11 +2,18 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.*;
 
 public class ClothShopGUI extends JFrame {
 
     CardLayout cardLayout;
     JPanel mainPanel;
+    DefaultTableModel productTableModel;
+
+    // DB Config
+    final String DB_URL = "jdbc:mysql://localhost:3306/clothshop";
+    final String DB_USER = "rokesh";
+    final String DB_PASS = "jacksparrow"; 
 
     public ClothShopGUI() {
         setTitle("🧵 Cloth Shop - Material Requirement App");
@@ -27,28 +34,19 @@ public class ClothShopGUI extends JFrame {
         sidebar.setBorder(new EmptyBorder(20, 10, 10, 10));
 
         JButton productButton = createNavButton("🛍 Products", buttonColor, fieldFont);
-        JButton materialButton = createNavButton("📦 Material", buttonColor, fieldFont);
-        JButton orderButton = createNavButton("🧾 Order", buttonColor, fieldFont);
-
         sidebar.add(productButton);
-        sidebar.add(Box.createVerticalStrut(20));
-        sidebar.add(materialButton);
-        sidebar.add(Box.createVerticalStrut(20));
-        sidebar.add(orderButton);
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
         mainPanel.add(createProductPanel(headerFont, fieldFont, backgroundColor), "Products");
-        mainPanel.add(createMaterialPanel(headerFont, fieldFont, backgroundColor), "Material");
-        mainPanel.add(createOrderPanel(headerFont, fieldFont, backgroundColor), "Order");
-
         productButton.addActionListener(e -> cardLayout.show(mainPanel, "Products"));
-        materialButton.addActionListener(e -> cardLayout.show(mainPanel, "Material"));
-        orderButton.addActionListener(e -> cardLayout.show(mainPanel, "Order"));
 
         add(sidebar, BorderLayout.WEST);
         add(mainPanel, BorderLayout.CENTER);
+
+        // Initialize table with database content
+        loadProductData();
     }
 
     private JButton createNavButton(String title, Color bgColor, Font font) {
@@ -86,104 +84,28 @@ public class ClothShopGUI extends JFrame {
         form.add(new JLabel());
 
         String[] columns = {"Product Name", "Category", "Price", "Stock"};
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
+        productTableModel = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(productTableModel);
 
-        JButton submit = new JButton("Submit");
+        JButton submit = new JButton("Add Product");
         submit.addActionListener(e -> {
-            String[] row = {name.getText(), category.getText(), price.getText(), stock.getText()};
-            model.addRow(row);
-            name.setText(""); category.setText(""); price.setText(""); stock.setText("");
+            try {
+                String pname = name.getText();
+                String cat = category.getText();
+                double prc = Double.parseDouble(price.getText());
+                int stk = Integer.parseInt(stock.getText());
+
+                insertProduct(pname, cat, prc, stk);
+                loadProductData();
+
+                name.setText(""); category.setText(""); price.setText(""); stock.setText("");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Invalid Input!");
+            }
         });
 
         form.add(submit);
         wrapper.add(wrapWithTitle(form, "🛍 Product Catalog", titleFont), BorderLayout.NORTH);
-        wrapper.add(new JScrollPane(table), BorderLayout.CENTER);
-        return wrapper;
-    }
-
-    private JPanel createMaterialPanel(Font titleFont, Font fieldFont, Color bgColor) {
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(bgColor);
-
-        JPanel form = new JPanel(new GridLayout(6, 2, 10, 10));
-        form.setBorder(new EmptyBorder(20, 30, 20, 30));
-        form.setBackground(bgColor);
-
-        JTextField name = new JTextField();
-        JTextField quantity = new JTextField();
-        JTextField unit = new JTextField();
-        JTextField supplier = new JTextField();
-        JTextField delivery = new JTextField();
-
-        form.add(createLabel("Material Name:", fieldFont));
-        form.add(name);
-        form.add(createLabel("Quantity:", fieldFont));
-        form.add(quantity);
-        form.add(createLabel("Unit:", fieldFont));
-        form.add(unit);
-        form.add(createLabel("Supplier:", fieldFont));
-        form.add(supplier);
-        form.add(createLabel("Expected Delivery:", fieldFont));
-        form.add(delivery);
-        form.add(new JLabel());
-
-        String[] columns = {"Name", "Quantity", "Unit", "Supplier", "Delivery"};
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
-
-        JButton submit = new JButton("Submit");
-        submit.addActionListener(e -> {
-            String[] row = {name.getText(), quantity.getText(), unit.getText(), supplier.getText(), delivery.getText()};
-            model.addRow(row);
-            name.setText(""); quantity.setText(""); unit.setText(""); supplier.setText(""); delivery.setText("");
-        });
-
-        form.add(submit);
-        wrapper.add(wrapWithTitle(form, "📦 Material Entry", titleFont), BorderLayout.NORTH);
-        wrapper.add(new JScrollPane(table), BorderLayout.CENTER);
-        return wrapper;
-    }
-
-    private JPanel createOrderPanel(Font titleFont, Font fieldFont, Color bgColor) {
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(bgColor);
-
-        JPanel form = new JPanel(new GridLayout(6, 2, 10, 10));
-        form.setBorder(new EmptyBorder(20, 30, 20, 30));
-        form.setBackground(bgColor);
-
-        JTextField orderId = new JTextField();
-        JTextField customer = new JTextField();
-        JTextField product = new JTextField();
-        JTextField quantity = new JTextField();
-        JTextField date = new JTextField();
-
-        form.add(createLabel("Order ID:", fieldFont));
-        form.add(orderId);
-        form.add(createLabel("Customer Name:", fieldFont));
-        form.add(customer);
-        form.add(createLabel("Product:", fieldFont));
-        form.add(product);
-        form.add(createLabel("Quantity:", fieldFont));
-        form.add(quantity);
-        form.add(createLabel("Order Date:", fieldFont));
-        form.add(date);
-        form.add(new JLabel());
-
-        String[] columns = {"Order ID", "Customer", "Product", "Quantity", "Date"};
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
-
-        JButton submit = new JButton("Submit");
-        submit.addActionListener(e -> {
-            String[] row = {orderId.getText(), customer.getText(), product.getText(), quantity.getText(), date.getText()};
-            model.addRow(row);
-            orderId.setText(""); customer.setText(""); product.setText(""); quantity.setText(""); date.setText("");
-        });
-
-        form.add(submit);
-        wrapper.add(wrapWithTitle(form, "🧾 Order Entry", titleFont), BorderLayout.NORTH);
         wrapper.add(new JScrollPane(table), BorderLayout.CENTER);
         return wrapper;
     }
@@ -207,10 +129,45 @@ public class ClothShopGUI extends JFrame {
         return wrapper;
     }
 
+    // === JDBC Helpers ===
+    private void insertProduct(String name, String category, double price, int stock) {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+            String sql = "INSERT INTO products (name, category, price, stock) VALUES (?, ?, ?, ?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setString(2, category);
+            ps.setDouble(3, price);
+            ps.setInt(4, stock);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadProductData() {
+        productTableModel.setRowCount(0);
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+            String sql = "SELECT name, category, price, stock FROM products";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                Object[] row = {
+                    rs.getString("name"),
+                    rs.getString("category"),
+                    rs.getDouble("price"),
+                    rs.getInt("stock")
+                };
+                productTableModel.addRow(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            ClothShopGUI gui = new ClothShopGUI();
-            gui.setVisible(true);
+            new ClothShopGUI().setVisible(true);
         });
     }
 }
