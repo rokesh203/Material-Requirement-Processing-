@@ -1,7 +1,7 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 
 public class ClothShopGUI extends JFrame {
 
@@ -10,7 +10,7 @@ public class ClothShopGUI extends JFrame {
 
     public ClothShopGUI() {
         setTitle("🧵 Cloth Shop - Material Requirement App");
-        setSize(900, 600);
+        setSize(1000, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -20,7 +20,6 @@ public class ClothShopGUI extends JFrame {
         Color buttonColor = new Color(52, 152, 219);
         Color backgroundColor = new Color(236, 240, 241);
 
-        // Sidebar
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBackground(sidebarColor);
@@ -37,17 +36,12 @@ public class ClothShopGUI extends JFrame {
         sidebar.add(Box.createVerticalStrut(20));
         sidebar.add(orderButton);
 
-        // Main Area
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        JPanel productPanel = createProductPanel(headerFont, fieldFont, backgroundColor);
-        JPanel materialPanel = createMaterialPanel(headerFont, fieldFont, backgroundColor);
-        JPanel orderPanel = createOrderPanel(headerFont, fieldFont, backgroundColor);
-
-        mainPanel.add(productPanel, "Products");
-        mainPanel.add(materialPanel, "Material");
-        mainPanel.add(orderPanel, "Order");
+        mainPanel.add(createProductPanel(headerFont, fieldFont, backgroundColor), "Products");
+        mainPanel.add(createMaterialPanel(headerFont, fieldFont, backgroundColor), "Material");
+        mainPanel.add(createOrderPanel(headerFont, fieldFont, backgroundColor), "Order");
 
         productButton.addActionListener(e -> cardLayout.show(mainPanel, "Products"));
         materialButton.addActionListener(e -> cardLayout.show(mainPanel, "Material"));
@@ -69,8 +63,8 @@ public class ClothShopGUI extends JFrame {
     }
 
     private JPanel createProductPanel(Font titleFont, Font fieldFont, Color bgColor) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(bgColor);
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(bgColor);
 
         JPanel form = new JPanel(new GridLayout(5, 2, 10, 10));
         form.setBorder(new EmptyBorder(20, 30, 20, 30));
@@ -80,8 +74,6 @@ public class ClothShopGUI extends JFrame {
         JTextField category = new JTextField();
         JTextField price = new JTextField();
         JTextField stock = new JTextField();
-        JTextArea display = new JTextArea();
-        display.setEditable(false);
 
         form.add(createLabel("Product Name:", fieldFont));
         form.add(name);
@@ -93,27 +85,26 @@ public class ClothShopGUI extends JFrame {
         form.add(stock);
         form.add(new JLabel());
 
+        String[] columns = {"Product Name", "Category", "Price", "Stock"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+
         JButton submit = new JButton("Submit");
-        submit.addActionListener((ActionEvent e) -> {
-            String msg = "Product added:\nName: " + name.getText() +
-                    "\nCategory: " + category.getText() +
-                    "\nPrice: " + price.getText() +
-                    "\nStock: " + stock.getText();
-            JOptionPane.showMessageDialog(this, msg);
-            display.append(msg + "\n\n");
+        submit.addActionListener(e -> {
+            String[] row = {name.getText(), category.getText(), price.getText(), stock.getText()};
+            model.addRow(row);
             name.setText(""); category.setText(""); price.setText(""); stock.setText("");
         });
 
         form.add(submit);
-
-        panel.add(wrapWithTitle(form, "🛍 Product Catalog", titleFont), BorderLayout.NORTH);
-        panel.add(new JScrollPane(display), BorderLayout.CENTER);
-        return panel;
+        wrapper.add(wrapWithTitle(form, "🛍 Product Catalog", titleFont), BorderLayout.NORTH);
+        wrapper.add(new JScrollPane(table), BorderLayout.CENTER);
+        return wrapper;
     }
 
     private JPanel createMaterialPanel(Font titleFont, Font fieldFont, Color bgColor) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(bgColor);
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(bgColor);
 
         JPanel form = new JPanel(new GridLayout(6, 2, 10, 10));
         form.setBorder(new EmptyBorder(20, 30, 20, 30));
@@ -124,8 +115,6 @@ public class ClothShopGUI extends JFrame {
         JTextField unit = new JTextField();
         JTextField supplier = new JTextField();
         JTextField delivery = new JTextField();
-        JTextArea display = new JTextArea();
-        display.setEditable(false);
 
         form.add(createLabel("Material Name:", fieldFont));
         form.add(name);
@@ -139,28 +128,26 @@ public class ClothShopGUI extends JFrame {
         form.add(delivery);
         form.add(new JLabel());
 
+        String[] columns = {"Name", "Quantity", "Unit", "Supplier", "Delivery"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+
         JButton submit = new JButton("Submit");
-        submit.addActionListener((ActionEvent e) -> {
-            String msg = "Material added:\nName: " + name.getText() +
-                    "\nQty: " + quantity.getText() +
-                    " " + unit.getText() +
-                    "\nSupplier: " + supplier.getText() +
-                    "\nDelivery: " + delivery.getText();
-            JOptionPane.showMessageDialog(this, msg);
-            display.append(msg + "\n\n");
+        submit.addActionListener(e -> {
+            String[] row = {name.getText(), quantity.getText(), unit.getText(), supplier.getText(), delivery.getText()};
+            model.addRow(row);
             name.setText(""); quantity.setText(""); unit.setText(""); supplier.setText(""); delivery.setText("");
         });
 
         form.add(submit);
-
-        panel.add(wrapWithTitle(form, "📦 Material Entry", titleFont), BorderLayout.NORTH);
-        panel.add(new JScrollPane(display), BorderLayout.CENTER);
-        return panel;
+        wrapper.add(wrapWithTitle(form, "📦 Material Entry", titleFont), BorderLayout.NORTH);
+        wrapper.add(new JScrollPane(table), BorderLayout.CENTER);
+        return wrapper;
     }
 
     private JPanel createOrderPanel(Font titleFont, Font fieldFont, Color bgColor) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(bgColor);
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(bgColor);
 
         JPanel form = new JPanel(new GridLayout(6, 2, 10, 10));
         form.setBorder(new EmptyBorder(20, 30, 20, 30));
@@ -171,8 +158,6 @@ public class ClothShopGUI extends JFrame {
         JTextField product = new JTextField();
         JTextField quantity = new JTextField();
         JTextField date = new JTextField();
-        JTextArea display = new JTextArea();
-        display.setEditable(false);
 
         form.add(createLabel("Order ID:", fieldFont));
         form.add(orderId);
@@ -186,23 +171,21 @@ public class ClothShopGUI extends JFrame {
         form.add(date);
         form.add(new JLabel());
 
+        String[] columns = {"Order ID", "Customer", "Product", "Quantity", "Date"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+
         JButton submit = new JButton("Submit");
-        submit.addActionListener((ActionEvent e) -> {
-            String msg = "Order placed:\nOrder ID: " + orderId.getText() +
-                    "\nCustomer: " + customer.getText() +
-                    "\nProduct: " + product.getText() +
-                    "\nQuantity: " + quantity.getText() +
-                    "\nDate: " + date.getText();
-            JOptionPane.showMessageDialog(this, msg);
-            display.append(msg + "\n\n");
+        submit.addActionListener(e -> {
+            String[] row = {orderId.getText(), customer.getText(), product.getText(), quantity.getText(), date.getText()};
+            model.addRow(row);
             orderId.setText(""); customer.setText(""); product.setText(""); quantity.setText(""); date.setText("");
         });
 
         form.add(submit);
-
-        panel.add(wrapWithTitle(form, "🧾 Order Entry", titleFont), BorderLayout.NORTH);
-        panel.add(new JScrollPane(display), BorderLayout.CENTER);
-        return panel;
+        wrapper.add(wrapWithTitle(form, "🧾 Order Entry", titleFont), BorderLayout.NORTH);
+        wrapper.add(new JScrollPane(table), BorderLayout.CENTER);
+        return wrapper;
     }
 
     private JLabel createLabel(String text, Font font) {
